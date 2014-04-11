@@ -49,7 +49,7 @@ void ThreadImpl::destory_thread(ThreadStruct &ts)
 	pthread_exit(NULL);
 }
 
-bool ThreadImpl::wati_for_thead_end(const ThreadStruct &ts, int32_t time_out)
+bool ThreadImpl::wait_for_thread_end(const ThreadStruct &ts, int32_t time_out)
 {
 	if(is_alive(ts) == false)
 	{
@@ -81,9 +81,9 @@ bool ThreadImpl::is_alive(const ThreadStruct &ts)
 	return false;
 }
 
-int ThreadImpl::get_thread_id(const ThreadStruct &ts)
+int32_t ThreadImpl::get_thread_id(const ThreadStruct &ts)
 {
-	return (int)(ts._thread_id);
+	return (int32_t)(ts._thread_id);
 }
 
 void ThreadImpl::imp_sleep(int32_t time_ms)
@@ -111,3 +111,52 @@ ThreadLib::~ThreadLib()
 
 }
 
+int ThreadLib::thread_func(ThreadLib *thread)
+{
+	thread->run();
+
+	return 0;
+}
+
+bool ThreadLib::start(size_t stack_size)
+{
+	bool ret = ThreadImpl::create_thread(_ts, thread_func, stack_size, static_cast<ThreadLib*>(this));
+
+	return ret;
+}
+
+bool ThreadLib::wait_for_end(int timeout_ms)
+{
+	if(is_alive() == false)
+	{
+		return true;
+	}
+	if(ThreadImpl::wait_for_thread_end(_ts, timeout_ms) == false)
+	{
+		return false;
+	}
+
+	ThreadImpl::destory_thread(_ts);
+	return true;
+}
+
+bool ThreadLib::is_alive()
+{
+	return ThreadImpl::is_alive(_ts);
+}
+
+void ThreadLib::terminate()
+{
+	ThreadImpl::temanite_thread(_ts);
+	ThreadImpl::destory_thread(_ts);
+}
+
+int32_t ThreadLib::get_id()
+{
+	return ThreadImpl::get_thread_id(_ts);
+}
+
+void ThreadLib::sleep(int32_t time_ms)
+{
+	ThreadImpl::imp_sleep(time_ms);
+}
