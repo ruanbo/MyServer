@@ -16,11 +16,25 @@
 BasicLogic::BasicLogic()
 {
 	_is_working = false;
+
+	_msg_queue = new RecvMsgQueue();
 }
 
 BasicLogic::~BasicLogic()
 {
 	_timers.clear();
+
+	if(_msg_queue != NULL)
+	{
+		delete _msg_queue;
+	}
+}
+
+bool BasicLogic::on_start()
+{
+	bool ret = true;
+
+	return ret;
 }
 
 bool BasicLogic::start()
@@ -77,4 +91,25 @@ bool BasicLogic::stop()
 	_is_working = false;
 
 	return true;
+}
+
+
+void BasicLogic::add_one_msg(const MessagePtr& msg)
+{
+	_msg_queue->add_msg(msg);
+}
+
+void BasicLogic::set_message_handle(const MessageHandler & handle)
+{
+	_msg_handle = handle;
+}
+
+void BasicLogic::handle_one_msg(const MessagePtr& msg)
+{
+	_msg_handle(msg);
+}
+
+int32_t BasicLogic::get_msg_size()const
+{
+	return _msg_queue->get_size();
 }

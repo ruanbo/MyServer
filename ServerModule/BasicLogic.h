@@ -17,6 +17,8 @@
 #include "ThreadLib.h"
 #include "common/SmartPtr.h"
 
+#include "Message.h"
+
 typedef boost::function<void ()> BasicTimerCallback;
 
 class SimpleTimer : public smart_count
@@ -65,17 +67,57 @@ public:
 typedef smart_ptr<SimpleTimer> SimpleTimerPtr;
 
 
+struct RecvMsgQueue
+{
+	std::list<MessagePtr> _msges;
+
+	void add_msg(const MessagePtr& one_msg)
+	{
+		_msges.push_back(one_msg);
+	}
+
+	bool is_empty()const
+	{
+		return _msges.empty();
+	}
+
+	MessagePtr get_one_msg()
+	{
+		MessagePtr one_msg = _msges.front();
+		_msges.pop_front();
+
+		return one_msg;
+	}
+
+	int32_t get_size()const
+	{
+		return _msges.size();
+	}
+};
+
+struct SendMsgQueue
+{
+	std::list<MessagePtr> _msges;
+};
+
+
+
 class BasicLogic : protected ThreadLib
 {
 private:
 	std::list<SimpleTimerPtr> _timers;
 	bool _is_working;
 
+	RecvMsgQueue *_msg_queue;
+	MessageHandler _msg_handle;
+
 public:
 	BasicLogic();
 	virtual ~BasicLogic();
 
 public:
+	bool on_start();
+
 	bool start();
 
 	void add_timer(int64_t interval_ms, const BasicTimerCallback &cb);
@@ -85,6 +127,15 @@ public:
 	virtual void run();
 
 	bool stop();
+
+public:
+	void add_one_msg(const MessagePtr& msg);
+
+	void set_message_handle(const MessageHandler & handle);
+
+	void handle_one_msg(const MessagePtr& msg);
+
+	int32_t get_msg_size()const;
 };
 
 

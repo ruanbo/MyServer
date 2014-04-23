@@ -82,6 +82,8 @@ private:
 	void operator = (const ThreadLib &);
 
 public:
+//	virtual void on_start() = 0;
+
 	virtual void run() = 0;
 
 	virtual void on_leaking() throw() {}

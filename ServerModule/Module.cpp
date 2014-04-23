@@ -9,30 +9,59 @@
 #include "Module.h"
 #include <cstdio>
 #include <boost/bind.hpp>
+#include "common/DebugProxy.h"
 
-static const int64 TIMER_100MS_DELAY = 500;
-static const int64 TIMER_1000MS_DELAY = 2000;
+static const int64_t TIMER_100MS_DELAY = 500;
+static const int64_t TIMER_1000MS_DELAY = 2000;
 
-Module::Module(const string &name, uint32 id)
+Module::Module()
+{
+	_module_name = "";
+	_module_id = 0;
+
+	_basic_logic = NULL;
+	_io_server = NULL;
+}
+
+Module::Module(const std::string &name, u_int32_t id)
 {
 	_module_name = name;
 	_module_id = id;
 
 	_basic_logic = new BasicLogic();
+	_basic_logic->set_message_handle(boost::bind(&Module::msg_handler, this, _1));
+
+	_io_server = new IOServer();
+	_io_server->set_push_msg_handle(boost::bind(&BasicLogic::add_one_msg, _basic_logic, _1));
+
 }
 
 Module::~Module()
 {
-	delete _basic_logic;
+	if(_basic_logic)
+	{
+		delete _basic_logic;
+	}
+	if(_io_server)
+	{
+		delete _io_server;
+	}
 }
 
 bool Module::on_start()
 {
-	if(_basic_logic->start() == false)
+	if(_basic_logic->on_start() == false)
 	{
 		printf("module start error: basic logic start error");
 		return false;
 	}
+
+	if(_io_server->on_start("127.0.0.1", 1002) == false)
+	{
+		printf("moduele start error: io_server start error");
+		return false;
+	}
+
 	return true;
 }
 
@@ -41,15 +70,20 @@ bool Module::start()
 	add_timer(TIMER_100MS_DELAY,boost::bind(&Module::timer_100ms,this));
 	add_timer(TIMER_1000MS_DELAY,boost::bind(&Module::timer_1000ms,this));
 
+	_io_server->start();
+	_basic_logic->start();
+
 	return true;
 }
 
 void Module::stop()
 {
 	_basic_logic->stop();
+
+	_io_server->stop();
 }
 
-void Module::add_timer(const int64 interval, const BasicTimerCallback & cb)
+void Module::add_timer(const int64_t interval, const BasicTimerCallback & cb)
 {
 	_basic_logic->add_timer(interval, cb);
 }
@@ -57,10 +91,16 @@ void Module::add_timer(const int64 interval, const BasicTimerCallback & cb)
 
 void Module::timer_100ms()
 {
-	printf("module:%s, timer_100ms. \n", _module_name.c_str());
+//	debug_info("module:%s, timer_100ms.", _module_name.c_str());
 }
 
 void Module::timer_1000ms()
 {
-	printf("module:%s, timer_1000ms. \n", _module_name.c_str());
+//	debug_info("module:%s, timer_1000ms. \n", _module_name.c_str());
+	debug_info("msg_size:%d", _basic_logic->get_msg_size());
+}
+
+void Module::msg_handler(const MessagePtr& msg)
+{
+
 }

@@ -31,8 +31,9 @@ int main(int argc, char ** argv)
 	}
 
 	server_run.stop();
+	sleep(1);
 
-	sleep(3);
+//	simple_server_test();
 
 	return 0;
 }
