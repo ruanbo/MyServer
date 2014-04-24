@@ -9,12 +9,11 @@
 
 Login::Login()
 {
-	// TODO Auto-generated constructor stub
 
 }
 
 Login::~Login()
 {
-	// TODO Auto-generated destructor stub
+
 }
 

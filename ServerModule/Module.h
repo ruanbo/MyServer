@@ -14,6 +14,7 @@
 #include "Message.h"
 #include "IOServer.h"
 
+#include "common/message/MessageStream.h"
 
 class Module {
 private:
