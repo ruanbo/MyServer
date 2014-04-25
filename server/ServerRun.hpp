@@ -13,7 +13,7 @@
 #include <vector>
 
 #include "common/DebugProxy.h"
-
+#include <iostream>
 
 //#include "server/login/"
 
@@ -122,6 +122,47 @@ public:
 		}
 	}
 
-
-
 };
+
+void init_system_server()
+{
+
+}
+
+//////// test functions
+
+
+void server_run_test()
+{
+	ServerRun server_run;
+
+	server_run.run();
+
+	string input_str;
+
+	while(true)
+	{
+		std::cin >> input_str;
+
+		if (input_str == "quit")
+		{
+			break;
+		}
+		sleep(1);
+	}
+
+	server_run.stop();
+}
+
+
+void script_manager_test()
+{
+	ScriptManager* manager = new ScriptManager();
+
+	manager->init();
+
+	LuaCallResult result = manager->ran_script_1_D(LSID_TEST_1, "test_func", 10);
+
+	cout << "ret.corr:" << result._corrness << "  ret.val:" << result._val << endl;
+	delete manager;
+}

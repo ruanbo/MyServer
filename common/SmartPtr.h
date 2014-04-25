@@ -111,6 +111,13 @@ public:
 		return *this;
 	}
 
+	template<typename U>
+	smart_ptr & operator = (smart_ptr<U> const &rhs)
+	{
+		this_type(rhs).swap(*this);
+		return *this;
+	}
+
 public:
 	T & operator * ()const
 	{
@@ -137,6 +144,45 @@ public:
 		rhs._p = temp;
 	}
 
+    typedef T * this_type::*unspecified_bool_type;
+
+    operator unspecified_bool_type () const
+    {
+        return _p == 0 ? 0 : &this_type::_p;
+    }
 };
+
+template<class T, class U> inline bool operator == (smart_ptr<T> const &a, smart_ptr<U> const &b)
+{
+    return a.get() == b.get();
+}
+
+template<class T, class U> inline bool operator != (smart_ptr<T> const &a, smart_ptr<U> const &b)
+{
+    return a.get() != b.get();
+}
+
+template<class T> inline bool operator == (smart_ptr<T> const &a, T *b)
+{
+    return a.get() == b;
+}
+
+template<class T> inline bool operator != (smart_ptr<T> const &a, T *b)
+{
+    return a.get() != b;
+}
+
+template<class T> inline bool operator == (T *a, smart_ptr<T> const &b)
+{
+    return a == b.get();
+}
+
+template<class T> inline bool operator != (T *a, smart_ptr<T> const &b)
+{
+    return a != b.get();
+}
+
+
+
 
 #endif /* SMARTCOUNT_H_ */

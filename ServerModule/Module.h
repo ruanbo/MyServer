@@ -14,6 +14,8 @@
 #include "Message.h"
 #include "IOServer.h"
 
+#include "ScriptHelp/ScriptManager.h"
+
 #include "common/message/MessageStream.h"
 
 class Module {
@@ -23,6 +25,8 @@ private:
 
 	BasicLogic* _basic_logic;
 	IOServer* _io_server;
+	ScriptManager *_script_manager;
+
 
 public:
 	Module();

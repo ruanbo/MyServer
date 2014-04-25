@@ -21,6 +21,7 @@ Module::Module()
 
 	_basic_logic = NULL;
 	_io_server = NULL;
+	_script_manager = NULL;
 }
 
 Module::Module(const std::string &name, u_int32_t id)
@@ -34,6 +35,7 @@ Module::Module(const std::string &name, u_int32_t id)
 	_io_server = new IOServer();
 	_io_server->set_push_msg_handle(boost::bind(&BasicLogic::add_one_msg, _basic_logic, _1));
 
+	_script_manager = new ScriptManager();
 }
 
 Module::~Module()
@@ -45,6 +47,11 @@ Module::~Module()
 	if(_io_server)
 	{
 		delete _io_server;
+	}
+
+	if(_script_manager)
+	{
+		delete _script_manager;
 	}
 }
 
@@ -59,6 +66,12 @@ bool Module::on_start()
 	if(_io_server->on_start("127.0.0.1", 1002) == false)
 	{
 		printf("moduele start error: io_server start error");
+		return false;
+	}
+
+	if(_script_manager->init() == false)
+	{
+		printf("script manager init error");
 		return false;
 	}
 

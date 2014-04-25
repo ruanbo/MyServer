@@ -4,5 +4,5 @@
 
 USER_OBJS :=
 
-LIBS := -lboost_system
+LIBS := -lboost_system -llua -ldl
 

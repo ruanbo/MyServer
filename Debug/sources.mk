@@ -27,4 +27,5 @@ server \
 server/login \
 common \
 ServerModule \
+ScriptHelp \
 

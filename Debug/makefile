@@ -12,6 +12,7 @@ RM := rm -rf
 -include server/subdir.mk
 -include common/subdir.mk
 -include ServerModule/subdir.mk
+-include ScriptHelp/subdir.mk
 -include subdir.mk
 -include objects.mk
 
