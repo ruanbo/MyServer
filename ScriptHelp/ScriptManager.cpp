@@ -18,7 +18,6 @@ extern "C" {
 #include "ScriptManager.h"
 #include "common/DebugProxy.h"
 
-
 using namespace std;
 
 struct ScriptPath lua_script_def[] =
@@ -83,6 +82,18 @@ static LuaCallResult lua_func_2_D(lua_State* L, const string& fn_name, double pa
 		lua_pop(L, 1);
 		return LUA_CALL_ERR;
 	}
+
+	lua_pushnumber(L, para1);
+	lua_pushnumber(L, para2);
+	lua_call(L, 2, 1);
+
+	LuaCallResult ret = LUA_CALL_OK;
+
+	ret._val = lua_tonumber(L, -1);
+
+	lua_pop(L, 1);
+
+	return ret;
 }
 
 }  // end of extern "C"
@@ -184,4 +195,19 @@ LuaCallResult ScriptManager::ran_script_1_D(LuaScriptID id, const std::string& f
 	return lua_func_1_D(script->_L, fn_name, para);
 }
 
+LuaCallResult ScriptManager::ran_script_2_D(LuaScriptID id, const std::string& fn_name, double para1, double para2)
+{
+	LuaScriptItemPtr script = get_script_item(id);
+	if(script == NULL)
+	{
+		return LUA_CALL_ERR;
+	}
+
+	if(script->_L == NULL)
+	{
+		return LUA_CALL_ERR;
+	}
+
+	return lua_func_2_D(script->_L, fn_name, para1, para2);
+}
 

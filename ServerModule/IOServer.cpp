@@ -252,7 +252,7 @@ void IOServer::read_op(int socket_id)
 
 	printf("read_data:%s \n", read_buf);
 
-	MessagePtr new_msg = new Message();
+	MessagePtr new_msg = new CMessage();
 	new_msg->set_socket_id(socket_id);
 	new_msg->append(read_buf, sizeof(read_buf));
 

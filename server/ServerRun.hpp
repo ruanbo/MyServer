@@ -157,12 +157,16 @@ void server_run_test()
 
 void script_manager_test()
 {
-	ScriptManager* manager = new ScriptManager();
+	ScriptManager* manager = ScriptManagerInst();
 
 	manager->init();
 
 	LuaCallResult result = manager->ran_script_1_D(LSID_TEST_1, "test_func", 10);
 
 	cout << "ret.corr:" << result._corrness << "  ret.val:" << result._val << endl;
-	delete manager;
 }
+
+
+
+
+

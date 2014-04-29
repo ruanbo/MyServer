@@ -20,9 +20,10 @@ private:
 
 public:
 	ScriptManager();
+
 	virtual ~ScriptManager();
 
-	ScriptManager* get_instance();
+	static ScriptManager* get_instance();
 
 public:
 	bool init();
@@ -37,6 +38,13 @@ public:
 
 	LuaCallResult ran_script_1_D(LuaScriptID id, const std::string& fn_name, double para);
 
+	LuaCallResult ran_script_2_D(LuaScriptID id, const std::string& fn_name, double para1, double para2);
 };
+
+inline ScriptManager* ScriptManagerInst()
+{
+	return ScriptManager::get_instance();
+}
+
 
 #endif /* SCRIPTMANAGET_H_ */

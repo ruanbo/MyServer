@@ -7,23 +7,23 @@
 
 #include "Message.h"
 
-Message::Message()
+CMessage::CMessage()
 {
 	_socket_id = 0;
 	_msg = "";
 }
 
-Message::~Message()
+CMessage::~CMessage()
 {
 
 }
 
-void Message::set_socket_id(int id)
+void CMessage::set_socket_id(int id)
 {
 	_socket_id = id;
 }
 
-void Message::append(const void *data, int size)
+void CMessage::append(const void *data, int size)
 {
 	_msg.append((const char*)data, size);
 }
