@@ -13,11 +13,14 @@
 #include <sys/types.h>
 #include <boost/function.hpp>
 #include <list>
+#include <vector>
 
 #include "ThreadLib.h"
 #include "common/SmartPtr.h"
+#include "CThread.h"
 
 #include "Message.h"
+
 
 typedef boost::function<void ()> BasicTimerCallback;
 
@@ -67,38 +70,38 @@ public:
 typedef smart_ptr<SimpleTimer> SimpleTimerPtr;
 
 
-struct RecvMsgQueue
-{
-	std::list<MessagePtr> _msges;
-
-	void add_msg(const MessagePtr& one_msg)
-	{
-		_msges.push_back(one_msg);
-	}
-
-	bool is_empty()const
-	{
-		return _msges.empty();
-	}
-
-	MessagePtr get_one_msg()
-	{
-		MessagePtr one_msg = _msges.front();
-		_msges.pop_front();
-
-		return one_msg;
-	}
-
-	int32_t get_size()const
-	{
-		return _msges.size();
-	}
-};
-
-struct SendMsgQueue
-{
-	std::list<MessagePtr> _msges;
-};
+//struct RecvMsgQueue
+//{
+//	std::list<MessagePtr> _msges;
+//
+//	void add_msg(const MessagePtr& one_msg)
+//	{
+//		_msges.push_back(one_msg);
+//	}
+//
+//	bool is_empty()const
+//	{
+//		return _msges.empty();
+//	}
+//
+//	MessagePtr get_one_msg()
+//	{
+//		MessagePtr one_msg = _msges.front();
+//		_msges.pop_front();
+//
+//		return one_msg;
+//	}
+//
+//	int32_t get_size()const
+//	{
+//		return _msges.size();
+//	}
+//};
+//
+//struct SendMsgQueue
+//{
+//	std::list<MessagePtr> _msges;
+//};
 
 
 
@@ -108,11 +111,17 @@ private:
 	std::list<SimpleTimerPtr> _timers;
 	bool _is_working;
 
-	RecvMsgQueue *_msg_queue;
+//	RecvMsgQueue *_msg_queue;
+	MessageRecvList *_msg_list;
+
 	MessageHandler _msg_handle;
 
+	std::list<CThread*> _thread_pool;
+
+#define THREAD_POOL_SIZE 1
+
 public:
-	BasicLogic();
+	BasicLogic(MessageRecvList* msg_list);
 	virtual ~BasicLogic();
 
 public:
@@ -129,7 +138,7 @@ public:
 	bool stop();
 
 public:
-	void add_one_msg(const MessagePtr& msg);
+	void add_one_msg(CMessage* msg);
 
 	void set_message_handle(const MessageHandler & handle);
 

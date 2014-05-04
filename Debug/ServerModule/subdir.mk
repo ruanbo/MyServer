@@ -5,6 +5,7 @@
 # Add inputs and outputs from these tool invocations to the build variables 
 CPP_SRCS += \
 ../ServerModule/BasicLogic.cpp \
+../ServerModule/CThread.cpp \
 ../ServerModule/EpollLib.cpp \
 ../ServerModule/IOServer.cpp \
 ../ServerModule/Message.cpp \
@@ -13,6 +14,7 @@ CPP_SRCS += \
 
 OBJS += \
 ./ServerModule/BasicLogic.o \
+./ServerModule/CThread.o \
 ./ServerModule/EpollLib.o \
 ./ServerModule/IOServer.o \
 ./ServerModule/Message.o \
@@ -21,6 +23,7 @@ OBJS += \
 
 CPP_DEPS += \
 ./ServerModule/BasicLogic.d \
+./ServerModule/CThread.d \
 ./ServerModule/EpollLib.d \
 ./ServerModule/IOServer.d \
 ./ServerModule/Message.d \

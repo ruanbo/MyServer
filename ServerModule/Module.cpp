@@ -22,6 +22,7 @@ Module::Module()
 	_basic_logic = NULL;
 	_io_server = NULL;
 	_script_manager = NULL;
+	_recv_msg = NULL;
 }
 
 Module::Module(const std::string &name, u_int32_t id)
@@ -29,13 +30,15 @@ Module::Module(const std::string &name, u_int32_t id)
 	_module_name = name;
 	_module_id = id;
 
-	_basic_logic = new BasicLogic();
-	_basic_logic->set_message_handle(boost::bind(&Module::msg_handler, this, _1));
+	_script_manager = ScriptManagerInst();
 
-	_io_server = new IOServer();
+	_recv_msg = new MessageRecvList();
+
+	_basic_logic = new BasicLogic(_recv_msg);
+//	_basic_logic->set_message_handle(boost::bind(&Module::msg_handler, this, _1));
+
+	_io_server = new IOServer(_recv_msg);
 	_io_server->set_push_msg_handle(boost::bind(&BasicLogic::add_one_msg, _basic_logic, _1));
-
-	_script_manager = new ScriptManager();
 }
 
 Module::~Module()
@@ -51,7 +54,12 @@ Module::~Module()
 
 	if(_script_manager)
 	{
-		delete _script_manager;
+//		delete _script_manager;
+	}
+
+	if(_recv_msg)
+	{
+		delete _recv_msg;
 	}
 }
 
@@ -72,6 +80,12 @@ bool Module::on_start()
 	if(_script_manager->init() == false)
 	{
 		printf("script manager init error");
+		return false;
+	}
+
+	if(_recv_msg->init() == false)
+	{
+		printf("recv_msg init error");
 		return false;
 	}
 
@@ -110,7 +124,7 @@ void Module::timer_100ms()
 void Module::timer_1000ms()
 {
 //	debug_info("module:%s, timer_1000ms. \n", _module_name.c_str());
-	debug_info("msg_size:%d", _basic_logic->get_msg_size());
+	debug_info("total:%d. left:%d", _recv_msg->_total_num, _basic_logic->get_msg_size());
 }
 
 void Module::msg_handler(const MessagePtr& msg)

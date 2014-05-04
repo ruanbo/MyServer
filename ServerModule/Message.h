@@ -20,10 +20,13 @@ class CMessage : public smart_count
 {
 private:
 	int _socket_id;
+	int16_t _type;
+
 	std::string _msg;
 
 public:
 	CMessage();
+	CMessage(int sock_id, int16_t type);
 	virtual ~CMessage();
 
 public:
@@ -33,7 +36,7 @@ public:
 
 typedef smart_ptr<CMessage> MessagePtr;
 
-typedef boost::function<void (const MessagePtr & msg)> MessageHandler;
+typedef boost::function<void (CMessage* msg)> MessageHandler;
 
 
 class MessageRecvList
@@ -41,16 +44,25 @@ class MessageRecvList
 public:
 	pthread_mutex_t _mutex;
 	pthread_cond_t _cond;
-	std::list<MessagePtr> _msges;
+	std::list<CMessage*> _msges;
+	u_int64_t _total_num;
 
 public:
 	MessageRecvList()
 	{
+		_total_num = 0;
 	}
 	virtual ~MessageRecvList()
 	{
 		pthread_mutex_destroy(&_mutex);
 		pthread_cond_destroy(&_cond);
+
+		while(_msges.empty() == false)
+		{
+			CMessage* msg = _msges.front();
+			_msges.pop_front();
+			delete msg;
+		}
 	}
 
 public:
@@ -68,15 +80,20 @@ public:
 	}
 
 public:
-	void add_msg(const MessagePtr& msg)
+	void add_msg(CMessage* msg)
 	{
 		_msges.push_back(msg);
+		_total_num++;
 	}
-	MessagePtr get_msg()
+	CMessage* get_msg()
 	{
-		MessagePtr msg = _msges.front();
+		CMessage* msg = _msges.front();
 		_msges.pop_front();
 		return msg;
+	}
+	int get_size()
+	{
+		return _msges.size();
 	}
 	bool is_empty()const
 	{

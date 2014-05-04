@@ -15,7 +15,9 @@
 
 int main(int argc, char ** argv)
 {
-	script_manager_test();
+//	script_manager_test();
+
+	server_run_test();
 
 	sleep(1);
 

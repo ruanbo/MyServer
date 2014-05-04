@@ -10,7 +10,14 @@
 CMessage::CMessage()
 {
 	_socket_id = 0;
+	_type = 0;
 	_msg = "";
+}
+
+CMessage::CMessage(int sock_id, int16_t type)
+{
+	_socket_id = sock_id;
+	_type = type;
 }
 
 CMessage::~CMessage()

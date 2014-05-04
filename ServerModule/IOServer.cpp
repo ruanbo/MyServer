@@ -18,8 +18,10 @@
 
 #include "common/DebugProxy.h"
 
+using namespace std;
 
-IOServer::IOServer()
+
+IOServer::IOServer(MessageRecvList* msg_list)
 {
 	_ip_addr = "";
 	_host_port = 0;
@@ -28,11 +30,18 @@ IOServer::IOServer()
 	_epoll_fd = 0;
 
 	_is_runing = false;
+
+	_msg_list = msg_list;
+
+	_local_msgs = new MessageRecvList();
 }
 
 IOServer::~IOServer()
 {
-
+	if(_local_msgs)
+	{
+		delete _local_msgs;
+	}
 }
 
 
@@ -41,7 +50,7 @@ void IOServer::set_push_msg_handle(const MessageHandler& handle)
 	_push_message = handle;
 }
 
-void IOServer::push_message(const MessagePtr & msg)
+void IOServer::push_message(CMessage* msg)
 {
 	_push_message(msg);
 }
@@ -104,6 +113,11 @@ bool IOServer::on_start(const std::string &ip, int port)
 		return false;
 	}
 
+	if(_local_msgs->init() == false)
+	{
+		printf("io server local msg init error");
+		return false;
+	}
 	return true;
 }
 
@@ -127,7 +141,7 @@ void IOServer::run()
 		if(events_num < 0)
 		{
 			printf("epoll_wait() error \n");
-			break;
+			continue;
 		}
 //		boost::asio::detail::mutex::scoped_lock lock(_mutex);
 //		lock.lock();
@@ -168,6 +182,14 @@ void IOServer::run()
 void IOServer::stop()
 {
 	_is_runing = false;
+
+	std::map<int32_t, std::string>::const_iterator iter = _conn_buff.begin();
+	for(; iter!=_conn_buff.end(); ++iter)
+	{
+		cout << "sock id:" << iter->first << ". recv_bytes:" << iter->second.length() << endl;
+	}
+
+	printf("local msg length:%d \n", _local_msgs->_total_num);
 
 	close(_epoll_fd);
 	close(_server_sock);
@@ -236,27 +258,90 @@ void IOServer::new_connect()
 	epoll_ctl_add(new_fd);
 }
 
+std::string IOServer::get_conn_buf(int32_t sock_id)
+{
+	std::map<int32_t, std::string>::iterator iter = _conn_buff.find(sock_id);
+	if(iter != _conn_buff.end())
+	{
+		return iter->second;
+	}
+	return std::string();
+}
+
+void IOServer::set_conn_buf(int32_t sock_id, const std::string& str)
+{
+	_conn_buff[sock_id] = str;
+}
+
 void IOServer::read_op(int socket_id)
 {
 	char read_buf[1024];
 	bzero(&read_buf, sizeof(read_buf));
 
-	int read_size = read(socket_id, read_buf, sizeof(read_buf));
-	if(read_size <= 0)
+	int read_bytes = read(socket_id, read_buf, sizeof(read_buf));
+	if(read_bytes <= 0)
 	{
+		cout << "read() error" << endl;
 		epoll_ctl(_epoll_fd, EPOLL_CTL_DEL, socket_id, NULL);
 		close_connect(socket_id);
 
 		return;
 	}
 
-	printf("read_data:%s \n", read_buf);
+	string conn_buf = get_conn_buf(socket_id);
 
-	MessagePtr new_msg = new CMessage();
-	new_msg->set_socket_id(socket_id);
-	new_msg->append(read_buf, sizeof(read_buf));
+	conn_buf.append(read_buf, read_bytes);
 
-	push_message(new_msg);
+	while(conn_buf.length() > 4)
+	{
+		int16_t packet_size = 0;
+		int16_t packet_type = 0;
+		uint32_t msg_id = 0;
+
+		conn_buf.copy((char*)&packet_size, sizeof(packet_size), 0);
+
+		if(packet_size < 1 || packet_size > 1024)
+		{
+			cout << "packet size error" << endl;
+			break;
+		}
+
+		if(conn_buf.length() < (u_int32_t)packet_size)
+		{
+			cout << "conn_buf < packet_size" << endl;
+			break;
+		}
+
+		conn_buf.copy((char*)&packet_type, sizeof(packet_type), sizeof(packet_size));
+		conn_buf.copy((char*)&msg_id, sizeof(msg_id), (sizeof(packet_size) + sizeof(packet_type)) );
+
+		conn_buf.erase(0, packet_size);
+
+		{
+			CMessage* new_msg = new CMessage(socket_id, packet_type);
+			new_msg->set_socket_id(socket_id);
+			_local_msgs->add_msg(new_msg);
+		}
+	}
+
+	set_conn_buf(socket_id, conn_buf);
+
+//	new_msg->append(read_buf, sizeof(read_buf));
+
+//	{
+//		pthread_mutex_lock(&_msg_list->_mutex);
+//		_msg_list->add_msg(new_msg);
+//		pthread_mutex_unlock(&_msg_list->_mutex);
+//	}
+
+	{
+//		pthread_mutex_lock(&_local_msgs->_mutex);
+//		_local_msgs->add_msg(new_msg);
+//		pthread_mutex_unlock(&_local_msgs->_mutex);
+	}
+
+
+//	push_message(new_msg);
 }
 
 void IOServer::write_op(int socket_id, const MessagePtr &msg)

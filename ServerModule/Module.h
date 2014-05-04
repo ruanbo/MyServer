@@ -18,7 +18,8 @@
 
 #include "common/message/MessageStream.h"
 
-class Module {
+class Module
+{
 private:
 	std::string _module_name;
 	u_int32_t _module_id;
@@ -26,6 +27,8 @@ private:
 	BasicLogic* _basic_logic;
 	IOServer* _io_server;
 	ScriptManager *_script_manager;
+
+	MessageRecvList *_recv_msg;
 
 
 public:

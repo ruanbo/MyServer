@@ -12,6 +12,7 @@
 #include "ThreadLib.h"
 #include "Message.h"
 #include <boost/asio/detail/mutex.hpp>
+#include <map>
 
 
 class IOServer : protected ThreadLib
@@ -26,16 +27,23 @@ private:
 
 	MessageHandler _push_message;
 
+	MessageRecvList *_msg_list;
+
+	MessageRecvList *_local_msgs;
+
+	std::map<int32_t, std::string> _conn_buff;
+
+
 #define MAX_EPOLL_EVENT  512
 
 public:
-	IOServer();
+	IOServer(MessageRecvList* msg_list);
 	virtual ~IOServer();
 
 public:
 	void set_push_msg_handle(const MessageHandler& handle);
 
-	void push_message(const MessagePtr & msg);
+	void push_message(CMessage* msg);
 
 	bool on_start(const std::string &ip, int port);
 
@@ -53,6 +61,10 @@ public:
 	void close_connect(int socket_id);
 
 	void new_connect();
+
+	std::string get_conn_buf(int32_t sock_id);
+
+	void set_conn_buf(int32_t sock_id, const std::string& str);
 
 	void read_op(int socket_id);
 
