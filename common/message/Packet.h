@@ -15,6 +15,8 @@ class Packet
 {
 protected:
 	int32_t _sock_id;
+	u_int32_t _msg_id;
+
 	MessageStream _body;
 
 private:
@@ -24,6 +26,7 @@ public:
 	Packet(int32_t sock_id, const char *data, const int32_t size)
 	{
 		_sock_id = sock_id;
+		_msg_id = 0;
 		_body.append(data, size);
 	}
 

@@ -216,6 +216,11 @@ bool IOServer::set_nonblocking(int socket_id)
 	return true;
 }
 
+void IOServer::set_socketopt(int socket_id)
+{
+
+}
+
 bool IOServer::epoll_ctl_add(int socket_id)
 {
 	epoll_event ep_event;

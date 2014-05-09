@@ -56,6 +56,8 @@ public:
 public:
 	bool set_nonblocking(int socket_id);
 
+	void set_socketopt(int socket_id);
+
 	bool epoll_ctl_add(int socket_id);
 
 	void close_connect(int socket_id);
